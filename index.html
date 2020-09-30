@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Frontend Mentor | IP Address Tracker</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
+        integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="
+        crossorigin="" />
+    <link rel="stylesheet" href="./assets/css/main.css">
+</head>
+
+<body>
+    <header class="banner__search">
+        <h1 class="title__search">IP Address Tracker</h1>
+        <div class="input-group" style="margin-bottom: 20px; ">
+            <div class="input-group-area"> <input type="text" id="input__search" class="input__search"
+                    placeholder="Search for any IP address or domain" value="192.212.174.101"></div>
+            <div id="searchbtn" class="input-group-icon"><img src="./assets/images/icon-arrow.svg" alt=""></div>
+        </div>
+
+
+        <div class="card__info">
+            <div class="card__body">
+                <label>IP ADDRESS</label>
+                <p id="ipaddresstext" class="card__text">192.212.174.101</p>
+                <label>Location</label>
+                <p id="locationtext" class="card__text">Brooklyn, NY 10001</p>
+                <label>TIMEZONE</label>
+                <p id="timezonetext" class="card__text">UTC-05:00</p>
+                <label>ISP</label>
+                <p id="isptext" class="card__text">SpaceX Starlink</p>
+            </div>
+            <p class="author">Developed by William Pavon</p>
+        </div>
+    </header>
+    <div id="mapid"></div>
+    <script src="https://code.jquery.com/jquery-3.5.1.js"
+        integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc=" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"
+        integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
+        crossorigin=""></script>
+    <script>
+        var mymap = null;
+        var initMarker = null;
+        navigator.geolocation.getCurrentPosition(function (location) {
+            var latlng = new L.LatLng(location.coords.latitude, location.coords.longitude);
+
+            mymap = L.map('mapid', { zoomControl: false }).setView(latlng, 17);
+            var myIcon = L.icon({
+                iconUrl: 'assets/images/icon-location.svg',
+                iconSize: [40, 50],
+                iconAnchor: [22, 94],
+                popupAnchor: [10, 100],
+            });
+            initMarker = L.marker(latlng, { icon: myIcon }).addTo(mymap);
+            L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}', {
+                attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+                maxZoom: 18,
+                watch: true,
+                id: 'mapbox/streets-v11',
+                tileSize: 512,
+                zoomOffset: -1,
+                accessToken: 'YOU TOKEN'
+            }).addTo(mymap);
+        });
+        $("#searchbtn").click(function (e) {
+            mymap.removeLayer(initMarker);
+            var ipSearch = $("#input__search").val();
+            var apiUrl = "YOU URL AND TOKEN TO API" + ipSearch;
+            $.ajax({
+                type: "GET",
+                url: apiUrl,
+                success: function (response) {
+                    var city = response.location.city;
+                    var region = response.location.region;
+                    var geonameId = response.location.geonameId;
+                    var country = response.location.country;
+                    var lotaciontext = city + ", " + region + ", " + country + ", " + geonameId
+                    $("#ipaddresstext").text(response.ip);
+                    $("#locationtext").text(lotaciontext);
+                    $("#timezonetext").text(response.location.timezone);
+                    $("#isptext").text(response.isp);
+                    // console.log(response);
+                    var myIcon = L.icon({
+                        iconUrl: 'assets/images/icon-location.svg',
+                        iconSize: [40, 50],
+                        iconAnchor: [22, 94],
+                        popupAnchor: [10, 100],
+                    });
+                    initMarker = L.marker([response.location.lat, response.location.lng], { icon: myIcon }).addTo(mymap);
+                    mymap.setView([response.location.lat, response.location.lng], 13);
+                }
+            });
+
+        });
+
+    </script>
+</body>
+
+</html>
